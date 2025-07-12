@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union, Optional
 from models import User, UserResponse
 
 # In-memory "database"
@@ -12,14 +12,14 @@ def get_all_users() -> List[UserResponse]:
     """Returns the complete list of users."""
     return usuarios_db
 
-def get_user_by_id(user_id: int) -> UserResponse | None:
+def get_user_by_id(user_id: int) -> Optional[UserResponse]:
     """Searches for and returns a user by their ID."""
     for usuario in usuarios_db:
         if usuario.id == user_id:
             return usuario
     return None
 
-def get_user_by_email(email: str) -> UserResponse | None:
+def get_user_by_email(email: str) -> Optional[UserResponse]:
     """Searches for and returns a user by their email."""
     for usuario in usuarios_db:
         if usuario.email == email:

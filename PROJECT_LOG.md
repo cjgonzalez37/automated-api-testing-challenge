@@ -197,3 +197,121 @@ requests==2.31.0
 **Last Major Change:** Code refactoring into modules (completed)
 **Next Session Goal:** Implement SQLite database integration
 **Status:** Ready for database migration phase - perfect code structure achieved
+
+---
+
+## 🔧 Troubleshooting Session - July 12, 2025 (16:00 UTC)
+
+### 🚨 **Critical Issues Resolved**
+
+#### **Issue #1: Virtual Environment Activation Failure**
+**Problem:** 
+```bash
+.venv/bin/activate:4: defining function based on alias `deactivate'
+.venv/bin/activate:4: parse error near `()'
+```
+
+**Root Cause:** Conflicting `deactivate` alias in macOS zsh shell interfering with virtual environment activation script.
+
+**Solution Found:**
+```bash
+unalias deactivate
+source .venv/bin/activate
+```
+
+**Impact:** ✅ Virtual environment now activates correctly
+**Documentation:** Added troubleshooting section to README.md for future macOS users
+
+#### **Issue #2: Python Version Management with pyenv**
+**Problem:** pyenv intercepting Python commands, preventing proper virtual environment usage.
+
+**Investigation Steps:**
+- Default `python` was pointing to Python 2.7.18 (pyenv managed)
+- `python3` was pointing to Python 3.9.11 (pyenv managed)
+- Virtual environment activation wasn't overriding pyenv paths
+
+**Solution Applied:**
+```bash
+pyenv global 3.9.11  # Set Python 3 as default globally
+```
+
+**Result:** ✅ Now `python` command defaults to Python 3.9.11 system-wide
+
+#### **Issue #3: Python 3.10+ Syntax Compatibility Error**
+**Problem:** 
+```bash
+TypeError: unsupported operand type(s) for |: 'ModelMetaclass' and 'NoneType'
+```
+
+**Root Cause:** Code in `database.py` used Python 3.10+ union syntax (`UserResponse | None`) but system runs Python 3.9.11.
+
+**Files Modified:**
+- `database.py` - Lines 12 and 17
+
+**Changes Made:**
+```python
+# BEFORE (Python 3.10+ syntax)
+def get_user_by_id(user_id: int) -> UserResponse | None:
+def get_user_by_email(email: str) -> UserResponse | None:
+
+# AFTER (Python 3.9 compatible)
+from typing import List, Union, Optional
+def get_user_by_id(user_id: int) -> Optional[UserResponse]:
+def get_user_by_email(email: str) -> Optional[UserResponse]:
+```
+
+**Result:** ✅ API now starts successfully with `uvicorn main:app --reload`
+
+### 🎯 **Final Status After Troubleshooting**
+
+#### ✅ **Environment Setup - WORKING**
+- Virtual environment activates correctly
+- Python 3.9.11 set as default
+- All dependencies installed and functional
+
+#### ✅ **API Execution - WORKING**
+- Server starts successfully: `uvicorn main:app --reload`
+- Available at: http://127.0.0.1:8000
+- Swagger UI accessible: http://127.0.0.1:8000/docs
+
+#### ✅ **Automated Testing - PASSING**
+- All tests executed successfully with `python test_api.py`
+- 100% test success rate maintained
+- No regressions introduced by fixes
+
+### 📚 **Knowledge Gained**
+
+#### **macOS Development Environment**
+- Shell aliases can interfere with Python virtual environments
+- pyenv configuration affects virtual environment behavior
+- Simple solutions often work better than complex workarounds
+
+#### **Python Version Compatibility**
+- Union type syntax (`|`) introduced in Python 3.10
+- `Optional[Type]` and `Union[Type, None]` are backward compatible
+- Always check Python version compatibility for modern syntax
+
+#### **Debugging Methodology**
+- Start with simplest solutions first
+- Check for environment conflicts before complex fixes
+- Document solutions for future reference
+
+### 🔄 **Documentation Updates Made**
+1. **README.md** - Added macOS troubleshooting section for `deactivate` alias conflict
+2. **PROJECT_LOG.md** - This comprehensive troubleshooting session log
+
+### 🚀 **Project Status: FULLY OPERATIONAL**
+- ✅ Development environment configured
+- ✅ API running successfully  
+- ✅ All tests passing
+- ✅ Ready for continued development
+
+**Session Duration:** ~45 minutes
+**Issues Resolved:** 3 critical blocking issues
+**Success Rate:** 100% - All problems solved
+**Collaboration:** Effective troubleshooting with Amazon Q
+
+---
+**Troubleshooting Session Completed:** July 12, 2025, 16:00 UTC
+**Environment Status:** Fully operational and ready for development
+**Next Steps:** Continue with planned SQLite database integration

@@ -24,6 +24,21 @@ This project contains a REST API for user management built with FastAPI.
 source .venv/bin/activate
 ```
 
+**⚠️ Troubleshooting for macOS users:**
+If you encounter this error when activating the virtual environment:
+```
+.venv/bin/activate:4: defining function based on alias `deactivate'
+.venv/bin/activate:4: parse error near `()'
+```
+
+This happens when you have a `deactivate` alias defined in your shell. To fix it:
+```bash
+unalias deactivate
+source .venv/bin/activate
+```
+
+This removes the conflicting alias and allows the virtual environment to activate properly.
+
 ### 2. Install dependencies (if necessary)
 ```bash
 pip install fastapi uvicorn requests pydantic
