@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script automatizado mejorado para probar la API de usuarios
-Incluye limpieza de datos y mejor aislamiento de tests
+Enhanced automated script to test the user API.
+Includes data cleanup and better test isolation.
 """
 
 import requests
@@ -17,16 +17,16 @@ class APITesterEnhanced:
         self.test_results = []
         self.passed_tests = 0
         self.failed_tests = 0
-        self.created_users = []  # Para tracking de usuarios creados
+        self.created_users = []  # For tracking created users
     
     def generate_unique_email(self, prefix: str = "test") -> str:
-        """Genera un email único para evitar duplicados"""
+        """Generates a unique email to avoid duplicates."""
         timestamp = int(time.time())
         unique_id = str(uuid.uuid4())[:8]
         return f"{prefix}_{timestamp}_{unique_id}@example.com"
     
     def log_test(self, test_name: str, passed: bool, message: str = ""):
-        """Registra el resultado de un test"""
+        """Logs the result of a test."""
         status = "✅ PASS" if passed else "❌ FAIL"
         result = f"{status} - {test_name}"
         if message:
@@ -45,7 +45,7 @@ class APITesterEnhanced:
             self.failed_tests += 1
     
     def assert_status_code(self, response: requests.Response, expected: int, test_name: str):
-        """Valida el status code de la respuesta"""
+        """Validates the response status code."""
         actual = response.status_code
         passed = actual == expected
         message = f"Expected {expected}, got {actual}"
@@ -53,7 +53,7 @@ class APITesterEnhanced:
         return passed
     
     def assert_content_type(self, response: requests.Response, expected: str, test_name: str):
-        """Valida el Content-Type header"""
+        """Validates the Content-Type header."""
         actual = response.headers.get('content-type', '').split(';')[0]
         passed = actual == expected
         message = f"Expected '{expected}', got '{actual}'"
@@ -61,7 +61,7 @@ class APITesterEnhanced:
         return passed
     
     def assert_json_field(self, data: Dict[Any, Any], field: str, expected_value: Any, test_name: str):
-        """Valida que un campo específico del JSON tenga el valor esperado"""
+        """Validates that a specific JSON field has the expected value."""
         actual_value = data.get(field)
         passed = actual_value == expected_value
         message = f"Field '{field}': expected '{expected_value}', got '{actual_value}'"
@@ -69,7 +69,7 @@ class APITesterEnhanced:
         return passed
     
     def assert_json_has_fields(self, data: Dict[Any, Any], required_fields: list, test_name: str):
-        """Valida que el JSON contenga todos los campos requeridos"""
+        """Validates that the JSON contains all required fields."""
         missing_fields = [field for field in required_fields if field not in data]
         passed = len(missing_fields) == 0
         message = f"Missing fields: {missing_fields}" if missing_fields else ""
@@ -77,7 +77,7 @@ class APITesterEnhanced:
         return passed
     
     def get_all_users(self) -> List[Dict]:
-        """Obtiene todos los usuarios actuales"""
+        """Gets all current users."""
         try:
             response = requests.get(f"{self.base_url}/users")
             if response.status_code == 200:
@@ -87,7 +87,7 @@ class APITesterEnhanced:
             return []
     
     def test_api_health(self):
-        """Test básico de conectividad"""
+        """Basic connectivity test."""
         print("🧪 Testing API connectivity")
         
         try:
@@ -101,35 +101,35 @@ class APITesterEnhanced:
             return False
     
     def test_get_initial_users(self):
-        """Test: Obtener usuarios iniciales"""
+        """Test: Get initial users."""
         print("\n🧪 Testing GET /users (initial state)")
         
         try:
             response = requests.get(f"{self.base_url}/users")
             
-            # Validar status code
+            # Validate status code
             self.assert_status_code(response, 200, "GET /users")
             
-            # Validar content-type
+            # Validate content-type
             self.assert_content_type(response, "application/json", "GET /users")
             
-            # Validar que devuelve una lista
+            # Validate that it returns a list
             data = response.json()
             passed = isinstance(data, list)
             self.log_test("GET /users - Response is list", passed, 
                          f"Expected list, got {type(data).__name__}")
             
-            # Validar que hay al menos un usuario inicial
+            # Validate that there is at least one initial user
             passed = len(data) >= 1
             self.log_test("GET /users - Has initial user", passed, 
                          f"Expected at least 1 user, got {len(data)}")
             
             if data and len(data) > 0:
-                # Validar estructura del primer usuario
+                # Validate the structure of the first user
                 user = data[0]
                 self.assert_json_has_fields(user, ['id', 'name', 'email'], "GET /users")
                 
-                # Validar que tiene los campos esperados (pero no valores específicos ya que pueden cambiar)
+                # Validate that it has the expected fields (but not specific values as they can change)
                 passed = isinstance(user.get('name'), str) and len(user.get('name', '')) > 0
                 self.log_test("GET /users - Valid name field", passed, 
                              f"Name should be non-empty string, got: {user.get('name')}")
@@ -145,10 +145,10 @@ class APITesterEnhanced:
             return []
     
     def test_create_user(self):
-        """Test: Crear un nuevo usuario con email único"""
+        """Test: Create a new user with a unique email."""
         print("\n🧪 Testing POST /users (create user)")
         
-        # Generar datos únicos para evitar conflictos
+        # Generate unique data to avoid conflicts
         unique_email = self.generate_unique_email("testuser")
         test_user = {
             'name': 'Test User',
@@ -163,39 +163,39 @@ class APITesterEnhanced:
                 data=json.dumps(test_user)
             )
             
-            # Validar status code
+            # Validate status code
             status_ok = self.assert_status_code(response, 201, "POST /users")
             
-            # Validar content-type
+            # Validate content-type
             self.assert_content_type(response, "application/json", "POST /users")
             
-            # Solo continuar con validaciones si el status code es correcto
+            # Only continue with validations if the status code is correct
             if status_ok and response.status_code == 201:
-                # Validar estructura de respuesta
+                # Validate response structure
                 data = response.json()
                 self.assert_json_has_fields(data, ['id', 'name', 'email'], "POST /users")
                 
-                # Validar que los datos coinciden con lo enviado
+                # Validate that the data matches what was sent
                 self.assert_json_field(data, 'name', test_user['name'], "POST /users")
                 self.assert_json_field(data, 'email', test_user['email'], "POST /users")
                 
-                # Validar que NO devuelve el password
+                # Validate that the password is NOT returned
                 passed = 'password' not in data
                 self.log_test("POST /users - Password not in response", passed, 
                              "Password should not be returned in response")
                 
-                # Validar que el ID es un número
+                # Validate that the ID is a number
                 passed = isinstance(data.get('id'), int)
                 self.log_test("POST /users - ID is integer", passed, 
                              f"Expected int, got {type(data.get('id')).__name__}")
                 
-                # Guardar usuario creado para tracking
+                # Save the created user for tracking
                 if 'id' in data:
                     self.created_users.append(data)
                 
                 return data
             else:
-                # Si falló la creación, registrar pero no hacer más validaciones
+                # If creation failed, log it but do no more validations
                 self.log_test("POST /users - Creation failed", False, 
                              f"Status code {response.status_code}, response: {response.text}")
                 return None
@@ -205,13 +205,13 @@ class APITesterEnhanced:
             return None
     
     def test_create_duplicate_user(self):
-        """Test: Intentar crear usuario con email duplicado"""
+        """Test: Attempt to create a user with a duplicate email."""
         print("\n🧪 Testing POST /users (duplicate email)")
         
-        # Usar el email del usuario inicial que sabemos que existe
+        # Use the email of the initial user that we know exists
         duplicate_user = {
             'name': 'Another User',
-            'email': 'admin@example.com',  # Email que ya existe
+            'email': 'admin@example.com',  # Email that already exists
             'password': 'anotherpassword'
         }
         
@@ -222,13 +222,13 @@ class APITesterEnhanced:
                 data=json.dumps(duplicate_user)
             )
             
-            # Debe devolver error 400
+            # Should return a 400 error
             self.assert_status_code(response, 400, "POST /users (duplicate)")
             
-            # Validar mensaje de error
+            # Validate error message
             if response.status_code == 400:
                 data = response.json()
-                expected_detail = "El email ya está registrado"
+                expected_detail = "Email already registered"
                 actual_detail = data.get('detail', '')
                 passed = expected_detail in actual_detail
                 self.log_test("POST /users (duplicate) - Error message", passed, 
@@ -238,24 +238,24 @@ class APITesterEnhanced:
             self.log_test("POST /users (duplicate) - Connection", False, f"Request failed: {e}")
     
     def test_get_user_by_id(self, user_id: int):
-        """Test: Obtener usuario por ID"""
+        """Test: Get user by ID."""
         print(f"\n🧪 Testing GET /users/{user_id}")
         
         try:
             response = requests.get(f"{self.base_url}/users/{user_id}")
             
-            # Validar status code
+            # Validate status code
             self.assert_status_code(response, 200, f"GET /users/{user_id}")
             
-            # Validar content-type
+            # Validate content-type
             self.assert_content_type(response, "application/json", f"GET /users/{user_id}")
             
-            # Validar estructura
+            # Validate structure
             if response.status_code == 200:
                 data = response.json()
                 self.assert_json_has_fields(data, ['id', 'name', 'email'], f"GET /users/{user_id}")
                 
-                # Validar que el ID coincide
+                # Validate that the ID matches
                 self.assert_json_field(data, 'id', user_id, f"GET /users/{user_id}")
                 
                 return data
@@ -265,19 +265,19 @@ class APITesterEnhanced:
             return None
     
     def test_get_nonexistent_user(self):
-        """Test: Obtener usuario que no existe"""
+        """Test: Get a user that does not exist."""
         print("\n🧪 Testing GET /users/999 (non-existent)")
         
         try:
             response = requests.get(f"{self.base_url}/users/999")
             
-            # Debe devolver error 404
+            # Should return a 404 error
             self.assert_status_code(response, 404, "GET /users/999 (non-existent)")
             
-            # Validar mensaje de error
+            # Validate error message
             if response.status_code == 404:
                 data = response.json()
-                expected_detail = "Usuario no encontrado"
+                expected_detail = "User not found"
                 actual_detail = data.get('detail', '')
                 passed = expected_detail in actual_detail
                 self.log_test("GET /users/999 - Error message", passed, 
@@ -287,14 +287,14 @@ class APITesterEnhanced:
             self.log_test("GET /users/999 - Connection", False, f"Request failed: {e}")
     
     def test_data_persistence(self):
-        """Test: Verificar que los datos persisten entre requests"""
+        """Test: Verify that data persists between requests."""
         print("\n🧪 Testing data persistence")
         
-        # Obtener usuarios antes
+        # Get users before
         users_before = self.get_all_users()
         initial_count = len(users_before)
         
-        # Crear un usuario
+        # Create a user
         unique_email = self.generate_unique_email("persistence")
         test_user = {
             'name': 'Persistence Test User',
@@ -303,7 +303,7 @@ class APITesterEnhanced:
         }
         
         try:
-            # Crear usuario
+            # Create user
             response = requests.post(
                 f"{self.base_url}/users",
                 headers={'Content-Type': 'application/json'},
@@ -311,16 +311,16 @@ class APITesterEnhanced:
             )
             
             if response.status_code == 201:
-                # Obtener usuarios después
+                # Get users after
                 users_after = self.get_all_users()
                 final_count = len(users_after)
                 
-                # Validar que aumentó la cantidad
+                # Validate that the count increased
                 passed = final_count == initial_count + 1
                 self.log_test("Data Persistence - User count increased", passed,
                              f"Expected {initial_count + 1}, got {final_count}")
                 
-                # Validar que el nuevo usuario está en la lista
+                # Validate that the new user is in the list
                 created_user = response.json()
                 user_found = any(u.get('email') == unique_email for u in users_after)
                 self.log_test("Data Persistence - New user in list", user_found,
@@ -330,16 +330,16 @@ class APITesterEnhanced:
             self.log_test("Data Persistence - Connection", False, f"Request failed: {e}")
     
     def run_all_tests(self):
-        """Ejecuta todos los tests"""
+        """Runs all tests."""
         print("🚀 Starting Enhanced API Tests")
         print("=" * 50)
         
-        # Test de conectividad
+        # Connectivity test
         if not self.test_api_health():
             print("\n❌ API is not accessible. Make sure the server is running on http://127.0.0.1:8000")
             return
         
-        # Tests principales
+        # Main tests
         initial_users = self.test_get_initial_users()
         created_user = self.test_create_user()
         self.test_create_duplicate_user()
@@ -350,11 +350,11 @@ class APITesterEnhanced:
         self.test_get_nonexistent_user()
         self.test_data_persistence()
         
-        # Resumen final
+        # Final summary
         self.print_summary()
     
     def print_summary(self):
-        """Imprime el resumen de los tests"""
+        """Prints the test summary."""
         print("\n" + "=" * 50)
         print("📊 TEST SUMMARY")
         print("=" * 50)
@@ -378,7 +378,7 @@ class APITesterEnhanced:
         return self.failed_tests == 0
 
 def main():
-    """Función principal"""
+    """Main function."""
     print("🔧 Enhanced FastAPI User Management API Tester")
     print("This version uses unique emails to avoid conflicts between test runs")
     print("Make sure your API server is running on http://127.0.0.1:8000")
@@ -389,7 +389,7 @@ def main():
     tester = APITesterEnhanced()
     tester.run_all_tests()
     
-    # Exit code para CI/CD
+    # Exit code for CI/CD
     sys.exit(0 if tester.failed_tests == 0 else 1)
 
 if __name__ == "__main__":

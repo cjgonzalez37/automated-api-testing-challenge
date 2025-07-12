@@ -2,37 +2,37 @@ import requests
 import json
 
 def create_user():
-    # --- CONFIGURACIÓN: MODIFICA ESTAS VARIABLES ---
+    # --- CONFIGURATION: MODIFY THESE VARIABLES ---
     
-    # 1. La URL del endpoint de tu API para crear usuarios
+    # 1. The URL of your API endpoint for creating users
     url = 'http://127.0.0.1:8000/users'
     
-    # 2. Los datos del usuario que quieres crear.
-    #    Asegúrate de que las claves coincidan con lo que tu API espera.
+    # 2. The data of the user you want to create.
+    #    Make sure the keys match what your API expects.
     user_data = {
         'name': 'Evelin Test',
         'email': 'evelin.test@example.com',
         'password': 'supersecretpassword'
     }
     
-    # 3. Encabezados de la petición. El Content-Type para JSON es estándar.
-    #    Si tu API necesita un token de autenticación, descomenta y edita la línea de 'Authorization'.
+    # 3. Request headers. The Content-Type for JSON is standard.
+    #    If your API needs an authentication token, uncomment and edit the 'Authorization' line.
     headers = {
         'Content-Type': 'application/json',
-        # 'Authorization': 'Bearer TU_TOKEN_DE_API_AQUI'
+        # 'Authorization': 'Bearer YOUR_API_TOKEN_HERE'
     }
     
-    # --- LÓGICA DE LA PETICIÓN ---
+    # --- REQUEST LOGIC ---
     
     try:
-        # Hacemos la petición POST, enviando los datos como JSON
+        # We make the POST request, sending the data as JSON
         response = requests.post(url, headers=headers, data=json.dumps(user_data))
         
-        # Verificamos si la petición fue exitosa (código de estado 2xx)
+        # We check if the request was successful (2xx status code)
         response.raise_for_status()
         
-        print("¡Usuario creado exitosamente!")
-        print("Respuesta de la API:")
+        print("User created successfully!")
+        print("API Response:")
         print(response.json())
         
     except requests.exceptions.HTTPError as http_err:

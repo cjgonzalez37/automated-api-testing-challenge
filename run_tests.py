@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-Script simple para ejecutar tests rápidos de la API
+Simple script to run quick API tests.
 """
 
 import requests
 import json
 
 def quick_test():
-    """Test rápido de funcionalidad básica"""
+    """Quick test for basic functionality."""
     base_url = "http://127.0.0.1:8000"
     
     print("🚀 Quick API Test")
     print("-" * 30)
     
     try:
-        # Test 1: GET usuarios
+        # Test 1: GET users
         print("1. Testing GET /users...")
         response = requests.get(f"{base_url}/users")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
@@ -22,7 +22,7 @@ def quick_test():
         assert isinstance(users, list), "Response should be a list"
         print(f"   ✅ Found {len(users)} users")
         
-        # Test 2: POST crear usuario
+        # Test 2: POST create user
         print("2. Testing POST /users...")
         import time
         timestamp = int(time.time())
@@ -44,7 +44,7 @@ def quick_test():
         assert "password" not in created_user, "Password should not be in response"
         print(f"   ✅ Created user with ID {created_user['id']}")
         
-        # Test 3: GET usuario por ID
+        # Test 3: GET user by ID
         print("3. Testing GET /users/{id}...")
         user_id = created_user["id"]
         response = requests.get(f"{base_url}/users/{user_id}")
@@ -65,3 +65,4 @@ def quick_test():
 
 if __name__ == "__main__":
     quick_test()
+
