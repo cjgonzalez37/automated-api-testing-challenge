@@ -1,5 +1,12 @@
 # API de Gestión de Usuarios - FastAPI
 
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green.svg)
+![Pydantic](https://img.shields.io/badge/Pydantic-2.5.0-red.svg)
+![Tests](https://img.shields.io/badge/tests-automated-brightgreen.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Status](https://img.shields.io/badge/status-active-success.svg)
+
 Este proyecto contiene una API REST para gestión de usuarios construida con FastAPI.
 
 ## Archivos del Proyecto
