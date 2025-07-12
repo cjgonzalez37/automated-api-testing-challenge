@@ -1,4 +1,4 @@
-# API de Gestión de Usuarios - FastAPI
+# Automated API Testing Challenge - FastAPI User Management
 
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green.svg)
