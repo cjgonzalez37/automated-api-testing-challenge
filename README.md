@@ -7,61 +7,61 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 
-Este proyecto contiene una API REST para gestión de usuarios construida con FastAPI.
+This project contains a REST API for user management built with FastAPI.
 
-## Archivos del Proyecto
+## Project Files
 
-- `main.py` - API principal con FastAPI
-- `create_user.py` - Script cliente para crear usuarios
-- `test_api.py` - **Script de testing automatizado completo**
-- `run_tests.py` - Script de testing rápido
-- `.venv/` - Entorno virtual de Python
+- `main.py` - Main API with FastAPI
+- `create_user.py` - Client script to create users
+- `test_api.py` - **Complete automated testing script**
+- `run_tests.py` - Quick testing script
+- `.venv/` - Python virtual environment
 
-## Cómo Ejecutar
+## How to Run
 
-### 1. Activar el entorno virtual
+### 1. Activate the virtual environment
 ```bash
 source .venv/bin/activate
 ```
 
-### 2. Instalar dependencias (si es necesario)
+### 2. Install dependencies (if necessary)
 ```bash
 pip install fastapi uvicorn requests pydantic
 ```
 
-### 3. Ejecutar la API
+### 3. Run the API
 ```bash
 uvicorn main:app --reload
 ```
-La API estará disponible en: http://127.0.0.1:8000
+The API will be available at: http://127.0.0.1:8000
 
-### 4. Ver documentación automática
+### 4. View automatic documentation
 - Swagger UI: http://127.0.0.1:8000/docs
 - ReDoc: http://127.0.0.1:8000/redoc
 
-## Testing Automatizado
+## Automated Testing
 
-### Script Completo de Testing (`test_api.py`)
+### Complete Testing Script (`test_api.py`)
 
-Este script realiza pruebas exhaustivas de la API:
+This script performs exhaustive tests on the API:
 
-**Validaciones que realiza:**
+**Validations performed:**
 - ✅ Status codes (200, 201, 400, 404)
 - ✅ Content-Type headers
-- ✅ Estructura del JSON de respuesta
-- ✅ Campos requeridos en las respuestas
-- ✅ Validación de datos específicos (nombre, email)
-- ✅ Que no se devuelva el password
-- ✅ Manejo de errores (email duplicado, usuario no encontrado)
-- ✅ Tipos de datos correctos
+- ✅ JSON response structure
+- ✅ Required fields in responses
+- ✅ Specific data validation (name, email)
+- ✅ Password is not returned
+- ✅ Error handling (duplicate email, user not found)
+- ✅ Correct data types
 
-**Cómo ejecutar:**
+**How to run:**
 ```bash
-# Asegúrate de que la API esté corriendo primero
+# Make sure the API is running first
 python test_api.py
 ```
 
-**Ejemplo de salida:**
+**Example output:**
 ```
 🚀 Starting API Tests
 ==================================================
@@ -87,54 +87,54 @@ Total Tests: 15
 🎉 All tests passed! Your API is working correctly.
 ```
 
-### Script de Testing Rápido (`run_tests.py`)
+### Quick Testing Script (`run_tests.py`)
 
-Para pruebas rápidas durante el desarrollo:
+For quick tests during development:
 
 ```bash
 python run_tests.py
 ```
 
-## Endpoints de la API
+## API Endpoints
 
 ### GET /users
-Obtiene todos los usuarios
-- **Response:** Lista de usuarios (sin passwords)
+Gets all users
+- **Response:** List of users (without passwords)
 
 ### POST /users
-Crea un nuevo usuario
+Creates a new user
 - **Body:** `{"name": "string", "email": "string", "password": "string"}`
-- **Response:** Usuario creado (sin password)
-- **Status:** 201 si es exitoso, 400 si el email ya existe
+- **Response:** Created user (without password)
+- **Status:** 201 if successful, 400 if email already exists
 
 ### GET /users/{user_id}
-Obtiene un usuario por ID
-- **Response:** Usuario específico
-- **Status:** 200 si existe, 404 si no existe
+Gets a user by ID
+- **Response:** Specific user
+- **Status:** 200 if it exists, 404 if it does not exist
 
-## Características del Testing
+## Testing Features
 
-### Aserciones Implementadas
-1. **Status Code Validation** - Verifica códigos HTTP correctos
-2. **Content-Type Validation** - Asegura respuestas JSON
-3. **Field Validation** - Verifica campos requeridos
-4. **Data Integrity** - Confirma que los datos enviados coinciden con los recibidos
-5. **Security Validation** - Verifica que passwords no se devuelvan
-6. **Error Handling** - Prueba manejo correcto de errores
-7. **Type Validation** - Verifica tipos de datos correctos
+### Implemented Assertions
+1. **Status Code Validation** - Verifies correct HTTP codes
+2. **Content-Type Validation** - Ensures JSON responses
+3. **Field Validation** - Verifies required fields
+4. **Data Integrity** - Confirms that sent data matches received data
+5. **Security Validation** - Verifies that passwords are not returned
+6. **Error Handling** - Tests correct error handling
+7. **Type Validation** - Verifies correct data types
 
-### Casos de Prueba Cubiertos
-- ✅ Obtener usuarios iniciales
-- ✅ Crear usuario válido
-- ✅ Intentar crear usuario con email duplicado
-- ✅ Obtener usuario por ID válido
-- ✅ Intentar obtener usuario inexistente
-- ✅ Conectividad básica de la API
+### Test Cases Covered
+- ✅ Get initial users
+- ✅ Create a valid user
+- ✅ Try to create a user with a duplicate email
+- ✅ Get user by valid ID
+- ✅ Try to get a non-existent user
+- ✅ Basic API connectivity
 
-## Uso en CI/CD
+## CI/CD Usage
 
-El script `test_api.py` devuelve códigos de salida apropiados:
-- `0` si todos los tests pasan
-- `1` si algún test falla
+The `test_api.py` script returns appropriate exit codes:
+- `0` if all tests pass
+- `1` if any test fails
 
-Esto permite integrarlo fácilmente en pipelines de CI/CD.
+This allows for easy integration into CI/CD pipelines.
