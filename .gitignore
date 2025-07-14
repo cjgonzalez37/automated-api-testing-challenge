@@ -189,3 +189,11 @@ Desktop.ini
 
 # Logs
 *.log
+
+# SQLite database files
+test.db
+test.db-shm
+test.db-wal
+*.db
+*.db-shm
+*.db-wal

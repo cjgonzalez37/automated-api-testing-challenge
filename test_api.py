@@ -7,7 +7,13 @@ Validates status codes, body content, headers, and specific data.
 import requests
 import json
 import sys
+import os
 from typing import Dict, Any
+
+# Ensure a clean database for each test run
+if os.path.exists("test.db"):
+    os.remove("test.db")
+
 
 class APITester:
     def __init__(self, base_url: str = "http://127.0.0.1:8000"):
@@ -68,35 +74,24 @@ class APITester:
         return passed
     
     def test_get_initial_users(self):
-        """Test: Get initial users."""
+        """Test: Get initial users (should be an empty list)."""
         print("\n🧪 Testing GET /users (initial state)")
         
         try:
             response = requests.get(f"{self.base_url}/users")
             
-            # Validate status code
             self.assert_status_code(response, 200, "GET /users")
-            
-            # Validate content-type
             self.assert_content_type(response, "application/json", "GET /users")
             
-            # Validate that it returns a list
             data = response.json()
             passed = isinstance(data, list)
             self.log_test("GET /users - Response is list", passed, 
                          f"Expected list, got {type(data).__name__}")
             
-            # Validate that there is at least one initial user
-            passed = len(data) >= 1
-            self.log_test("GET /users - Has initial user", passed, 
-                         f"Expected at least 1 user, got {len(data)}")
-            
-            if data and len(data) > 0:
-                # Validate the structure of the first user
-                user = data[0]
-                self.assert_json_has_fields(user, ['id', 'name', 'email'], "GET /users")
-                self.assert_json_field(user, 'name', 'Initial User', "GET /users")
-                self.assert_json_field(user, 'email', 'admin@example.com', "GET /users")
+            # With a clean DB, the initial list should be empty
+            passed = len(data) == 0
+            self.log_test("GET /users - Is empty initially", passed, 
+                         f"Expected 0 users, got {len(data)}")
             
             return data
             
@@ -161,13 +156,13 @@ class APITester:
             self.log_test("POST /users - Connection", False, f"Request failed: {e}")
             return None
     
-    def test_create_duplicate_user(self):
+    def test_create_duplicate_user(self, email_to_test: str):
         """Test: Attempt to create a user with a duplicate email."""
         print("\n🧪 Testing POST /users (duplicate email)")
         
         duplicate_user = {
             'name': 'Another User',
-            'email': 'admin@example.com',  # Email that already exists
+            'email': email_to_test,  # Use the email from the user we just created
             'password': 'anotherpassword'
         }
         
@@ -266,7 +261,11 @@ class APITester:
         # Main tests
         initial_users = self.test_get_initial_users()
         created_user = self.test_create_user()
-        self.test_create_duplicate_user()
+        
+        if created_user and 'email' in created_user:
+            self.test_create_duplicate_user(created_user['email'])
+        else:
+            self.log_test("POST /users (duplicate) - SKIPPED", False, "Could not run test because user creation failed.")
         
         if created_user and 'id' in created_user:
             self.test_get_user_by_id(created_user['id'])
@@ -303,7 +302,7 @@ def main():
     print("Make sure your API server is running on http://127.0.0.1:8000")
     print("You can start it with: uvicorn main:app --reload")
     
-    input("\nPress Enter to start testing...")
+    
     
     tester = APITester()
     tester.run_all_tests()

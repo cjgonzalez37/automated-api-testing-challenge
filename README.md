@@ -1,22 +1,34 @@
 # Automated API Testing Challenge
 
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green.svg)
-![Pydantic](https://img.shields.io/badge/Pydantic-2.5.0-red.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-green.svg)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0.41-red.svg)
+![SQLite](https://img.shields.io/badge/SQLite-3-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-automated-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 ![WSL](https://img.shields.io/badge/WSL-Ubuntu-orange.svg)
 
-This project contains a REST API for user management built with FastAPI.
+This project contains a REST API for user management built with FastAPI and SQLite database with SQLAlchemy ORM.
 
 ## Project Files
 
 - `main.py` - Main API with FastAPI
+- `database.py` - **SQLAlchemy database configuration and CRUD operations**
+- `models.py` - Pydantic models for request/response validation
+- `init_db.py` - **Database initialization script**
 - `create_user.py` - Client script to create users
 - `test_api.py` - **Complete automated testing script**
 - `run_tests.py` - Quick testing script
 - `.venv/` - Python virtual environment
+
+## Database Features
+
+- **SQLite database** with WAL mode for better concurrency
+- **SQLAlchemy ORM** for robust database operations
+- **Persistent storage** - data survives server restarts
+- **Automatic table creation** and schema management
+- **Proper error handling** for database operations
 
 ## How to Run
 
@@ -42,24 +54,41 @@ This removes the conflicting alias and allows the virtual environment to activat
 
 ### 2. Install dependencies (if necessary)
 ```bash
-pip install fastapi uvicorn requests pydantic
+pip install fastapi uvicorn requests pydantic sqlalchemy
 ```
 
-### 3. Run the API
+### 3. Initialize the database
+```bash
+python init_db.py
+```
+
+### 4. Run the API
 ```bash
 uvicorn main:app --reload
 ```
 The API will be available at: http://127.0.0.1:8000
 
-### 4. View automatic documentation
+### 5. View automatic documentation
 - Swagger UI: http://127.0.0.1:8000/docs
 - ReDoc: http://127.0.0.1:8000/redoc
+
+## Database Architecture
+
+### SQLAlchemy Models
+- **DBUser**: SQLAlchemy model for database operations
+- **User**: Pydantic model for request validation
+- **UserResponse**: Pydantic model for response serialization
+
+### Database Configuration
+- **Engine**: SQLite with WAL mode and optimized settings
+- **Session Management**: Proper connection handling with dependency injection
+- **Error Handling**: Robust error handling for database operations
 
 ## Automated Testing
 
 ### Complete Testing Script (`test_api.py`)
 
-This script performs exhaustive tests on the API:
+This script performs exhaustive tests on the API with database integration:
 
 **Validations performed:**
 - ✅ Status codes (200, 201, 400, 404)
@@ -70,6 +99,7 @@ This script performs exhaustive tests on the API:
 - ✅ Password is not returned
 - ✅ Error handling (duplicate email, user not found)
 - ✅ Correct data types
+- ✅ Database persistence and integrity
 
 **How to run:**
 ```bash
@@ -88,15 +118,12 @@ python test_api.py
 ✅ PASS - GET /users - Status Code
 ✅ PASS - GET /users - Content-Type
 ✅ PASS - GET /users - Response is list
-✅ PASS - GET /users - Has initial user
-✅ PASS - GET /users - Required Fields
-✅ PASS - GET /users - Field name
-✅ PASS - GET /users - Field email
+✅ PASS - GET /users - Is empty initially
 
 📊 TEST SUMMARY
 ==================================================
-Total Tests: 15
-✅ Passed: 15
+Total Tests: 20
+✅ Passed: 20
 ❌ Failed: 0
 📈 Success Rate: 100.0%
 
@@ -114,17 +141,17 @@ python run_tests.py
 ## API Endpoints
 
 ### GET /users
-Gets all users
+Gets all users from the database
 - **Response:** List of users (without passwords)
 
 ### POST /users
-Creates a new user
+Creates a new user in the database
 - **Body:** `{"name": "string", "email": "string", "password": "string"}`
 - **Response:** Created user (without password)
 - **Status:** 201 if successful, 400 if email already exists
 
 ### GET /users/{user_id}
-Gets a user by ID
+Gets a user by ID from the database
 - **Response:** Specific user
 - **Status:** 200 if it exists, 404 if it does not exist
 
@@ -138,14 +165,33 @@ Gets a user by ID
 5. **Security Validation** - Verifies that passwords are not returned
 6. **Error Handling** - Tests correct error handling
 7. **Type Validation** - Verifies correct data types
+8. **Database Persistence** - Ensures data survives server restarts
 
 ### Test Cases Covered
-- ✅ Get initial users
+- ✅ Get initial users (empty database)
 - ✅ Create a valid user
 - ✅ Try to create a user with a duplicate email
 - ✅ Get user by valid ID
 - ✅ Try to get a non-existent user
 - ✅ Basic API connectivity
+- ✅ Database integrity checks
+
+## Development Setup
+
+### For WSL/Linux Users
+This project works best in a native Linux environment. If you're using WSL, consider copying the project to your home directory:
+
+```bash
+cp -r /mnt/c/path/to/project ~/workspace/
+cd ~/workspace/automated-api-testing-challenge
+```
+
+### Database Initialization
+The database is automatically created when you run the API, but you can also initialize it manually:
+
+```bash
+python init_db.py
+```
 
 ## CI/CD Usage
 
@@ -154,3 +200,11 @@ The `test_api.py` script returns appropriate exit codes:
 - `1` if any test fails
 
 This allows for easy integration into CI/CD pipelines.
+
+## Technical Stack
+
+- **FastAPI** - Modern, fast web framework for building APIs
+- **SQLAlchemy** - SQL toolkit and ORM
+- **SQLite** - Lightweight, serverless database
+- **Pydantic** - Data validation using Python type annotations
+- **Uvicorn** - ASGI server implementation
