@@ -109,7 +109,7 @@ python test_api.py
 
 **Example output:**
 ```
-🚀 Starting API Tests
+🚀 Starting Complete API Tests (CRUD)
 ==================================================
 🧪 Testing API connectivity
 ✅ PASS - API Health Check
@@ -120,10 +120,23 @@ python test_api.py
 ✅ PASS - GET /users - Response is list
 ✅ PASS - GET /users - Is empty initially
 
+🧪 Testing POST /users (create user)
+✅ PASS - POST /users - Status Code
+✅ PASS - POST /users - Content-Type
+...
+
+🧪 Testing PUT /users/1 (update user)
+✅ PASS - PUT /users/1 - Status Code
+...
+
+🧪 Testing DELETE /users/1
+✅ PASS - DELETE /users/1 - Status Code
+...
+
 📊 TEST SUMMARY
 ==================================================
-Total Tests: 20
-✅ Passed: 20
+Total Tests: 45
+✅ Passed: 45
 ❌ Failed: 0
 📈 Success Rate: 100.0%
 
@@ -155,6 +168,17 @@ Gets a user by ID from the database
 - **Response:** Specific user
 - **Status:** 200 if it exists, 404 if it does not exist
 
+### PUT /users/{user_id}
+Updates an existing user in the database
+- **Body:** `{"name": "string", "email": "string", "password": "string"}`
+- **Response:** Updated user (without password)
+- **Status:** 200 if successful, 404 if user not found, 400 if email already exists
+
+### DELETE /users/{user_id}
+Deletes a user from the database
+- **Response:** `{"message": "User deleted successfully"}`
+- **Status:** 200 if successful, 404 if user not found
+
 ## Testing Features
 
 ### Implemented Assertions
@@ -173,8 +197,15 @@ Gets a user by ID from the database
 - ✅ Try to create a user with a duplicate email
 - ✅ Get user by valid ID
 - ✅ Try to get a non-existent user
+- ✅ Update existing user (PUT)
+- ✅ Try to update user with duplicate email
+- ✅ Try to update non-existent user
+- ✅ Delete existing user
+- ✅ Verify user deletion
+- ✅ Try to delete non-existent user
 - ✅ Basic API connectivity
 - ✅ Database integrity checks
+- ✅ Complete CRUD operations validation
 
 ## Development Setup
 

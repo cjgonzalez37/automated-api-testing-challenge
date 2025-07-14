@@ -103,12 +103,14 @@ class APITester:
         """Test: Create a new user."""
         print("\n🧪 Testing POST /users (create user)")
         
-        # Generate a unique email using a timestamp to avoid duplicates
+        # Generate a unique email using a timestamp and random number to avoid duplicates
         import time
+        import random
         timestamp = int(time.time())
+        random_num = random.randint(1000, 9999)
         test_user = {
             'name': 'Test User',
-            'email': f'test{timestamp}@example.com',
+            'email': f'test{timestamp}{random_num}@example.com',
             'password': 'testpassword123'
         }
         
@@ -234,6 +236,185 @@ class APITester:
         except requests.exceptions.RequestException as e:
             self.log_test("GET /users/999 - Connection", False, f"Request failed: {e}")
     
+    def test_update_user(self, user_id: int, original_email: str):
+        """Test: Update an existing user."""
+        print(f"\n🧪 Testing PUT /users/{user_id} (update user)")
+        
+        # Generate unique email for update
+        import time
+        timestamp = int(time.time())
+        updated_user = {
+            'name': 'Updated Test User',
+            'email': f'updated{timestamp}@example.com',
+            'password': 'newpassword123'
+        }
+        
+        try:
+            response = requests.put(
+                f"{self.base_url}/users/{user_id}",
+                headers={'Content-Type': 'application/json'},
+                data=json.dumps(updated_user)
+            )
+            
+            # Validate status code
+            self.assert_status_code(response, 200, f"PUT /users/{user_id}")
+            
+            # Validate content-type
+            self.assert_content_type(response, "application/json", f"PUT /users/{user_id}")
+            
+            if response.status_code == 200:
+                # Validate response structure
+                data = response.json()
+                self.assert_json_has_fields(data, ['id', 'name', 'email'], f"PUT /users/{user_id}")
+                
+                # Validate that the data was updated
+                self.assert_json_field(data, 'name', updated_user['name'], f"PUT /users/{user_id}")
+                self.assert_json_field(data, 'email', updated_user['email'], f"PUT /users/{user_id}")
+                self.assert_json_field(data, 'id', user_id, f"PUT /users/{user_id}")
+                
+                # Validate that the password is NOT returned
+                passed = 'password' not in data
+                self.log_test(f"PUT /users/{user_id} - Password not in response", passed, 
+                             "Password should not be returned in response")
+                
+                return data
+            
+        except requests.exceptions.RequestException as e:
+            self.log_test(f"PUT /users/{user_id} - Connection", False, f"Request failed: {e}")
+            return None
+    
+    def test_update_user_duplicate_email(self, user_id: int, existing_email: str):
+        """Test: Update user with duplicate email (should fail)."""
+        print(f"\n🧪 Testing PUT /users/{user_id} (duplicate email)")
+        
+        duplicate_user = {
+            'name': 'Test User',
+            'email': existing_email,  # Use existing email
+            'password': 'testpassword123'
+        }
+        
+        try:
+            response = requests.put(
+                f"{self.base_url}/users/{user_id}",
+                headers={'Content-Type': 'application/json'},
+                data=json.dumps(duplicate_user)
+            )
+            
+            # Should return a 400 error
+            self.assert_status_code(response, 400, f"PUT /users/{user_id} (duplicate)")
+            
+            # Validate error message
+            data = response.json()
+            expected_detail = "Email already registered"
+            actual_detail = data.get('detail', '')
+            passed = expected_detail in actual_detail
+            self.log_test(f"PUT /users/{user_id} (duplicate) - Error message", passed, 
+                         f"Expected '{expected_detail}' in '{actual_detail}'")
+            
+        except requests.exceptions.RequestException as e:
+            self.log_test(f"PUT /users/{user_id} (duplicate) - Connection", False, f"Request failed: {e}")
+    
+    def test_update_nonexistent_user(self):
+        """Test: Update a user that does not exist."""
+        print("\n🧪 Testing PUT /users/999 (non-existent)")
+        
+        updated_user = {
+            'name': 'Non-existent User',
+            'email': 'nonexistent@example.com',
+            'password': 'password123'
+        }
+        
+        try:
+            response = requests.put(
+                f"{self.base_url}/users/999",
+                headers={'Content-Type': 'application/json'},
+                data=json.dumps(updated_user)
+            )
+            
+            # Should return a 404 error
+            self.assert_status_code(response, 404, "PUT /users/999 (non-existent)")
+            
+            # Validate error message
+            data = response.json()
+            expected_detail = "User not found"
+            actual_detail = data.get('detail', '')
+            passed = expected_detail in actual_detail
+            self.log_test("PUT /users/999 - Error message", passed, 
+                         f"Expected '{expected_detail}' in '{actual_detail}'")
+            
+        except requests.exceptions.RequestException as e:
+            self.log_test("PUT /users/999 - Connection", False, f"Request failed: {e}")
+    
+    def test_delete_user(self, user_id: int):
+        """Test: Delete an existing user."""
+        print(f"\n🧪 Testing DELETE /users/{user_id}")
+        
+        try:
+            response = requests.delete(f"{self.base_url}/users/{user_id}")
+            
+            # Validate status code
+            self.assert_status_code(response, 200, f"DELETE /users/{user_id}")
+            
+            # Validate content-type
+            self.assert_content_type(response, "application/json", f"DELETE /users/{user_id}")
+            
+            if response.status_code == 200:
+                # Validate response structure
+                data = response.json()
+                expected_message = "User deleted successfully"
+                actual_message = data.get('message', '')
+                passed = expected_message in actual_message
+                self.log_test(f"DELETE /users/{user_id} - Success message", passed, 
+                             f"Expected '{expected_message}' in '{actual_message}'")
+                
+                return True
+            
+        except requests.exceptions.RequestException as e:
+            self.log_test(f"DELETE /users/{user_id} - Connection", False, f"Request failed: {e}")
+            return False
+    
+    def test_verify_user_deleted(self, user_id: int):
+        """Test: Verify that a deleted user no longer exists."""
+        print(f"\n🧪 Testing GET /users/{user_id} (verify deletion)")
+        
+        try:
+            response = requests.get(f"{self.base_url}/users/{user_id}")
+            
+            # Should return a 404 error
+            self.assert_status_code(response, 404, f"GET /users/{user_id} (deleted)")
+            
+            # Validate error message
+            data = response.json()
+            expected_detail = "User not found"
+            actual_detail = data.get('detail', '')
+            passed = expected_detail in actual_detail
+            self.log_test(f"GET /users/{user_id} (deleted) - Error message", passed, 
+                         f"Expected '{expected_detail}' in '{actual_detail}'")
+            
+        except requests.exceptions.RequestException as e:
+            self.log_test(f"GET /users/{user_id} (deleted) - Connection", False, f"Request failed: {e}")
+    
+    def test_delete_nonexistent_user(self):
+        """Test: Delete a user that does not exist."""
+        print("\n🧪 Testing DELETE /users/999 (non-existent)")
+        
+        try:
+            response = requests.delete(f"{self.base_url}/users/999")
+            
+            # Should return a 404 error
+            self.assert_status_code(response, 404, "DELETE /users/999 (non-existent)")
+            
+            # Validate error message
+            data = response.json()
+            expected_detail = "User not found"
+            actual_detail = data.get('detail', '')
+            passed = expected_detail in actual_detail
+            self.log_test("DELETE /users/999 - Error message", passed, 
+                         f"Expected '{expected_detail}' in '{actual_detail}'")
+            
+        except requests.exceptions.RequestException as e:
+            self.log_test("DELETE /users/999 - Connection", False, f"Request failed: {e}")
+    
     def test_api_health(self):
         """Basic connectivity test."""
         print("🧪 Testing API connectivity")
@@ -249,8 +430,8 @@ class APITester:
             return False
     
     def run_all_tests(self):
-        """Runs all tests."""
-        print("🚀 Starting API Tests")
+        """Runs all tests including complete CRUD operations."""
+        print("🚀 Starting Complete API Tests (CRUD)")
         print("=" * 50)
         
         # Connectivity test
@@ -258,7 +439,7 @@ class APITester:
             print("\n❌ API is not accessible. Make sure the server is running on http://127.0.0.1:8000")
             return
         
-        # Main tests
+        # Basic CRUD tests
         initial_users = self.test_get_initial_users()
         created_user = self.test_create_user()
         
@@ -268,9 +449,34 @@ class APITester:
             self.log_test("POST /users (duplicate) - SKIPPED", False, "Could not run test because user creation failed.")
         
         if created_user and 'id' in created_user:
-            self.test_get_user_by_id(created_user['id'])
+            retrieved_user = self.test_get_user_by_id(created_user['id'])
         
         self.test_get_nonexistent_user()
+        
+        # CREATE a second user for UPDATE tests
+        second_user = self.test_create_user()
+        
+        # UPDATE tests
+        if created_user and 'id' in created_user and 'email' in created_user:
+            updated_user = self.test_update_user(created_user['id'], created_user['email'])
+            
+            # Test duplicate email validation for UPDATE
+            if second_user and 'email' in second_user:
+                self.test_update_user_duplicate_email(created_user['id'], second_user['email'])
+        else:
+            self.log_test("PUT /users - SKIPPED", False, "Could not run test because user creation failed.")
+        
+        self.test_update_nonexistent_user()
+        
+        # DELETE tests
+        if created_user and 'id' in created_user:
+            delete_success = self.test_delete_user(created_user['id'])
+            if delete_success:
+                self.test_verify_user_deleted(created_user['id'])
+        else:
+            self.log_test("DELETE /users - SKIPPED", False, "Could not run test because user creation failed.")
+        
+        self.test_delete_nonexistent_user()
         
         # Final summary
         self.print_summary()

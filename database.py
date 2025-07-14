@@ -85,3 +85,36 @@ def create_new_user(db: SessionLocal, user: User) -> UserResponse:
     db.refresh(db_user)
     
     return UserResponse(id=db_user.id, name=db_user.name, email=db_user.email)
+
+def update_user(db: SessionLocal, user_id: int, user: User) -> Optional[UserResponse]:
+    """Updates an existing user in the database."""
+    db_user = db.query(DBUser).filter(DBUser.id == user_id).first()
+    if not db_user:
+        return None
+    
+    # Check if email is being changed and if it already exists
+    if user.email != db_user.email:
+        existing_user = db.query(DBUser).filter(DBUser.email == user.email).first()
+        if existing_user:
+            raise ValueError("Email already registered")
+    
+    # Update user fields
+    db_user.name = user.name
+    db_user.email = user.email
+    # In a real app, you'd hash the password
+    db_user.hashed_password = user.password + "notreallyhashed"
+    
+    db.commit()
+    db.refresh(db_user)
+    
+    return UserResponse(id=db_user.id, name=db_user.name, email=db_user.email)
+
+def delete_user(db: SessionLocal, user_id: int) -> bool:
+    """Deletes a user from the database."""
+    db_user = db.query(DBUser).filter(DBUser.id == user_id).first()
+    if not db_user:
+        return False
+    
+    db.delete(db_user)
+    db.commit()
+    return True
