@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 # Import models and database functions from separate modules
 from models import User, UserResponse
-from database import get_all_users, get_user_by_id, get_user_by_email, create_new_user, get_db
+from database import get_all_users, get_user_by_id, get_user_by_email, create_new_user, update_user, delete_user, get_db
 
 # Create the FastAPI application
 app = FastAPI()
@@ -43,3 +43,28 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
         # If the user is not found, raise an HTTP 404 error
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
+# Endpoint to update a user by their ID (PUT)
+@app.put("/users/{user_id}", response_model=UserResponse)
+def update_user_endpoint(user_id: int, user: User, db: Session = Depends(get_db)):
+    """
+    Updates an existing user in the database.
+    """
+    try:
+        updated_user = update_user(db, user_id, user)
+        if updated_user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return updated_user
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Endpoint to delete a user by their ID (DELETE)
+@app.delete("/users/{user_id}")
+def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
+    """
+    Deletes a user from the database.
+    """
+    success = delete_user(db, user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deleted successfully"}

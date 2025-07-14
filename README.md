@@ -155,6 +155,17 @@ Gets a user by ID from the database
 - **Response:** Specific user
 - **Status:** 200 if it exists, 404 if it does not exist
 
+### PUT /users/{user_id}
+Updates an existing user in the database
+- **Body:** `{"name": "string", "email": "string", "password": "string"}`
+- **Response:** Updated user (without password)
+- **Status:** 200 if successful, 404 if user not found, 400 if email already exists
+
+### DELETE /users/{user_id}
+Deletes a user from the database
+- **Response:** `{"message": "User deleted successfully"}`
+- **Status:** 200 if successful, 404 if user not found
+
 ## Testing Features
 
 ### Implemented Assertions
