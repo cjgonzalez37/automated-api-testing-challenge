@@ -11,8 +11,19 @@ import os
 from typing import Dict, Any
 
 # Ensure a clean database for each test run
-if os.path.exists("test.db"):
-    os.remove("test.db")
+def clean_database():
+    """Remove the test database file to ensure clean state."""
+    db_files = ["test.db", "test.db-wal", "test.db-shm"]
+    for db_file in db_files:
+        if os.path.exists(db_file):
+            try:
+                os.remove(db_file)
+                print(f"🧹 Cleaned database file: {db_file}")
+            except OSError as e:
+                print(f"⚠️  Could not remove {db_file}: {e}")
+
+# Clean database before starting tests
+clean_database()
 
 
 class APITester:
@@ -41,6 +52,24 @@ class APITester:
         else:
             self.failed_tests += 1
     
+    def clean_database_via_api(self):
+        """Clean the database by deleting all users via API."""
+        try:
+            # Get all users
+            response = requests.get(f"{self.base_url}/users")
+            if response.status_code == 200:
+                users = response.json()
+                # Delete each user
+                for user in users:
+                    delete_response = requests.delete(f"{self.base_url}/users/{user['id']}")
+                    if delete_response.status_code == 200:
+                        print(f"🧹 Deleted user {user['id']}: {user['name']}")
+                print(f"🧹 Database cleaned: {len(users)} users removed")
+            return True
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️  Could not clean database via API: {e}")
+            return False
+
     def assert_status_code(self, response: requests.Response, expected: int, test_name: str):
         """Validates the response status code."""
         actual = response.status_code
@@ -438,6 +467,10 @@ class APITester:
         if not self.test_api_health():
             print("\n❌ API is not accessible. Make sure the server is running on http://127.0.0.1:8000")
             return
+        
+        # Clean database before starting tests to ensure consistent state
+        print("\n🧹 Cleaning database for fresh test run...")
+        self.clean_database_via_api()
         
         # Basic CRUD tests
         initial_users = self.test_get_initial_users()
